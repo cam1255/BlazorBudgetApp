@@ -1,0 +1,10 @@
+﻿@page "/budget"
+
+<h3>Budget Spreadsheet</h3>
+
+<InputDate @bind-Value="Date" />
+
+@code {
+	DateOnly Date = DateOnly.FromDateTime(DateTime.Now);
+
+}
