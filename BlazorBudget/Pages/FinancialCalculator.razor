@@ -1,7 +1,7 @@
 ﻿@code {
-    @inject SharedDataService DataService
-    FinancialData Data => DataService.FinancialData;
+    FinancialData Data => new FinancialData();
 }
+
 
 <h3>Financial Calculator</h3>
 
@@ -32,4 +32,6 @@
 <p>Total Deductions: @Data.TotalDeductions</p>
 <p>Net Income: @Data.Net</p>
 <p>Net Income Per Paycheck: @Data.NetPerPaycheck</p>
+
+<div><Budget/></div>
 

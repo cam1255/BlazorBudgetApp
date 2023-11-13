@@ -1,0 +1,85 @@
+﻿@using Blazor.Extensions.Canvas.Canvas2D
+@using Blazor.Extensions
+@using BudgetApp.Data;
+
+@page "/drawing"
+@inject DrawingService drawingService
+<!-- This is components / HTML portion -->
+<h3>DrawingComponent</h3>
+
+<div @ref="canvasWrapper" @onclick="CanvasClick">
+	<BECanvas Width="@canvasX" Height="@canvasY" @ref="_canvasReference"></BECanvas>
+</div>
+
+<div>
+	<label>X</label>
+	<InputNumber id="x" @bind-Value="X" />
+	<label>Y</label>
+	<InputNumber id="y" @bind-Value="Y" />
+</div>
+
+
+<form>
+	<div class="row">
+		<div class="col">
+			<label class="control-label">ScannerName</label>
+			<input class="form-control" @bind="ScannerName" />
+		</div>
+	</div>
+</form>
+@code {
+	private Canvas2DContext _context;
+
+	protected BECanvasComponent _canvasReference;
+	private ElementReference canvasWrapper;
+	readonly int canvasX = 2200;
+	readonly int canvasY = 1000;
+	string ScannerName;
+
+	List<Rectangle> Rectangles = new List<Rectangle>();
+	int X;
+	int Y;
+	int L=50;
+	int H=50;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await base.OnInitializedAsync();
+
+		Rectangles = await drawingService.GetAllRectangles();
+	}
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		this._context = await this._canvasReference.CreateCanvas2DAsync();
+	}
+	private async Task CanvasClick(MouseEventArgs e)
+	{
+		// Assuming L and H (length and height) are predefined or set by the user in some way
+		X = (int)e.OffsetX - (L / 2); // Center the rectangle on the click position
+		Y = (int)e.OffsetY - (H / 2);
+		bool overlap = await drawingService.CheckOverlap(X, Y, L, H);
+		if (!overlap)
+		{
+			await DrawRectangle();
+		}
+	}
+
+	private async Task DrawRectangle()
+	{
+		await this._context.BeginPathAsync();
+		int tempL = L;
+		int tempH = H;
+		if(ScannerName.Length >= 10)
+		{
+			tempL = ScannerName.Length * 6 + 5;
+		}
+		await this._context.StrokeRectAsync(X, Y, tempL, H);
+		await this._context.StrokeTextAsync(ScannerName, X+5, Y+(H/2));
+		await drawingService.AddRectangle(new Rectangle(X,Y));
+	}
+
+	private async void Clear()
+	{
+		await this._context.ClearRectAsync(0, 0, canvasX, canvasY);
+	}
+}
